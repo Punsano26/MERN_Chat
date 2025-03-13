@@ -119,3 +119,13 @@ export const updateProfile = async (req, res) => {
     res.status(500).json({ message: "Internal server error Whlie updateing profile picture" });
   }
 };
+
+export const checkAuth = async (req, res) => {
+  try {
+    res.status(200).json(req.user);
+  } catch (error) {
+    res
+        .status(500)
+        .json({ message: "Error while updateing profile picture" });
+  }
+}
