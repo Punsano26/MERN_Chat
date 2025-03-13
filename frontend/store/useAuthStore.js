@@ -1,8 +1,6 @@
 import { create } from 'zustand'
 import api from "../src/services/api.js";
-import Signup from '../src/pages/Signup.jsx';
 import toast from 'react-hot-toast';
-import Login from '../src/pages/Login.jsx';
 import { io } from 'socket.io-client';
 
 
@@ -45,12 +43,13 @@ export const useAuthStore = create((set, get) => ({
     login: async (data) => {
         set({ isSigningIn: true });
         try {
-            const res = await api.post("/auth/login", data);
+            const res = await api.post("/auth/signin", data);
             set({ authUser: res.data })
             get().connectSocket();
             toast.success('Logged Successfully')
+          
         } catch (error) {
-            toast.error(error.response.data.message | "Sign In Failed")
+            toast.error(error.response.data.message || "Sign In Failed")
         } finally {
             set({ isSigningIn: false });
         }

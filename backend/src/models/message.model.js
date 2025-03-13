@@ -6,6 +6,9 @@ const MessageSchema = new Schema({
   resiverId: { type: String, require: true },
   text: { type: String },
   image: { type: String },
+},
+{
+  timestamps: true,
 });
 
 const MessageModel = model("message", MessageSchema);
