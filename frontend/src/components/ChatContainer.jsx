@@ -20,8 +20,9 @@ const Chatcontainer = () => {
     addFriend,
     friendRequestReceived,
     setIsFriend,
-    setFriendRequsestSent,
+    setFriendRequestSent,
     setFriendRequestReceived,
+    acceptFriendRequest,
   } = useChatStore();
   const { authUser } = useAuthStore();
   const messageEndRef = useRef(null);
@@ -29,17 +30,17 @@ const Chatcontainer = () => {
   const handleAddfriend = () => {
     addFriend(selectedUser._id);
     setIsFriend(true);
-    setFriendRequsestSent(true);
+    setFriendRequestSent(true);
     setFriendRequestReceived(true);
   };
 
   useEffect(() => {
     if (authUser && selectedUser) {
-      setIsFriend(authUser.friends.includes(selectedUser._id));
+      setIsFriend(authUser?.friends.includes(selectedUser._id));
       setFriendRequestReceived(
-        authUser.friendRequests.includes(selectedUser._id)
+        authUser?.friendRequests.includes(selectedUser._id)
       );
-      setFriendRequsestSent(selectedUser.friendRequests.includes(authUser._id));
+      setFriendRequestSent(selectedUser.friendRequests.includes(authUser._id));
     }
   });
 
@@ -63,14 +64,13 @@ const Chatcontainer = () => {
         <MessageSkeleton />
       </div>
     );
-
-    const handleAcceptRequest = () => {
-      acceptFriendRequest(selectedUser._id);
-      setIsFriend(true);
-      setFriendRequestReceived(true);
-      getMessage(selectedUser._id);
-    };
   }
+  const handleAcceptRequest = () => {
+    acceptFriendRequest(selectedUser._id);
+    setIsFriend(true);
+    setFriendRequestReceived(true);
+    getMessage(selectedUser._id);
+  };
   return (
     <div className="flex-1 flex flex-col overflow-auto">
       <ChatHeader />
@@ -117,7 +117,9 @@ const Chatcontainer = () => {
       {!isFriend && !friendRequestSent && !friendRequestReceived && (
         <div className="p-4 text-center text-red-500">
           You must be friend whit this user to send Messages.
-          <button className="btn btn-sm-mt-2">Add friend</button>
+          <button onClick={handleAddfriend} className="btn btn-sm-mt-2">
+            Add friend
+          </button>
         </div>
       )}
       {!isFriend && friendRequestSent && !friendRequestReceived && (
@@ -129,7 +131,7 @@ const Chatcontainer = () => {
       {!isFriend && friendRequestReceived && friendRequestSent && (
         <div className="p-4 text-center text-red-500">
           Friend want to be your friend.
-          <button onClick={handleAddfriend} className="btn btn-sm-mt-2">
+          <button onClick={handleAcceptRequest} className="btn btn-sm-mt-2">
             Appcept
           </button>
         </div>

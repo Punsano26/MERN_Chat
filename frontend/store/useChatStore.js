@@ -99,7 +99,7 @@ export const useChatStore = create((set, get) => ({
     try {
       const res = await api.post("/friend/accept", { friendId });
       toast.success(res.data.message);
-
+      useAuthStore.getState().socket.emit("friendRequestAccepted", friendId);
       set({ isFriend: true, friendReqReceived: false });
     } catch (error) {
       toast.error(
