@@ -28,6 +28,7 @@ function App() {
   }
   return (
     <>
+    {/* แก้ไข */}
       <div className="" data-theme={theme}>
         <Navbar />
         <Routes>
