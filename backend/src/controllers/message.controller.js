@@ -20,42 +20,46 @@ export const getUsersForSidebar = async (req, res) => {
 
 export const sendMessage = async (req, res) => {
   try {
-    const { id: receiverId } = req.params;
-    if (!id) {
+    const { id: resiverId } = req.params;
+    if (!resiverId) {
       return res.status(400).json({ message: "Receiver ID not found" });
     }
+
     const senderId = req.user._id;
-    //ส่งข้อความหากัน
-    let imageURL;
     const { text, image } = req.body;
+    let imageURL;
+
     if (image) {
-      const UploadResponse = await cloudinary.uploader.upload(image);
-      const imageURL = UploadResponse.secure_url;
+      const uploadResponse = await cloudinary.uploader.upload(image);
+      imageURL = uploadResponse.secure_url;
     }
 
-    const newMessage = await new MessageChannel({
+    const newMessage = new MessageModel({
       senderId,
-      receiverId,
+      resiverId,
       text,
       image: imageURL,
     });
+
     await newMessage.save();
-    //ทำให้มัน realtime
-    const receiverSocketId = getReceiverSocketId(receiverId);
+
+    const receiverSocketId = getReceiverSocketId(resiverId);
     if (receiverSocketId) {
-      io.to(receiverSocketId).emit("Newmessage", newMessage);
+      io.to(receiverSocketId).emit("newMessage", newMessage);
     }
+
     res.status(200).json(newMessage);
   } catch (error) {
     console.log("error := ", error);
-
     res.status(500).json({
       message: "Something went wrong Server error while sending Message",
     });
   }
 };
 
+
 export const getMessages = async (req, res) => {
+
   try {
     const { id: userToChatId } = req.params;
     const myId = req.user._id;
@@ -63,14 +67,16 @@ export const getMessages = async (req, res) => {
       $or: [
         {
           senderId: myId,
-          receiverId: userToChatId,
+          resiverId: userToChatId,
         },
         {
           senderId: userToChatId,
-          receiverId: myId,
+          resiverId: myId,
         },
       ],
     });
+    console.log("messages", messages);
+    
     res.status(200).json(messages);
   } catch (error) {
     res

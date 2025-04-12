@@ -3,8 +3,8 @@ import { Schema } from "mongoose";
 
 const MessageSchema = new Schema(
   {
-    senderId: { type: String, require: true },
-    resiverId: { type: String, require: true },
+    senderId: { type: Schema.Types.ObjectId, ref: "User", require: true },
+    resiverId: { type: Schema.Types.ObjectId, ref: "User", require: true },
     text: { type: String },
     image: { type: String },
   },

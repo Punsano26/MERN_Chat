@@ -79,27 +79,38 @@ export const useAuthStore = create((set, get) => ({
   connectSocket: () => {
     const { authUser, socket } = get();
     if (!authUser || socket?.connected) return;
-    const socketURL = import.meta.env.VITE_SOCKET_URL;
-    const newSocket = io(socketURL, {
-      query: { userId: authUser._id },
+    const socketUrl = import.meta.env.VITE_SOCKET_URL;
+    const newSocket = io(socketUrl, {
+      query: {
+        userId: authUser._id,
+      },
     });
     newSocket.connect();
     set({ socket: newSocket });
+    // listen for online users
     newSocket.on("getOnlineUsers", (userIds) => {
       set({ onlineUsers: userIds });
     });
 
-    socket.on("friendRequestReceived", (friendId) => {
+    newSocket.on("friendRequestReceived", (friendId) => {
       const selectedUser = useChatStore.getState().selectedUser;
-      if (friendId == selectedUser._id) {
-        useChatStore.getState().setFriendRequestReceived(true);
+      if (friendId === selectedUser._id) {
+        useChatStore.getState().setFriendReqReceived(true);
       }
     });
-    socket.on("friendRequestSent", (friendId) => {
+
+    newSocket.on("friendRequestSent", (friendId) => {
       const selectedUser = useChatStore.getState().selectedUser;
-      if (friendId == selectedUser._id) {
-        useChatStore.getState().setFriendRequestReceived(false);
-        useChatStore.getState().setFriendRequestSent(false);
+      if (friendId === selectedUser._id) {
+        useChatStore.getState().setFriendReqReceived(false);
+      }
+    });
+
+    newSocket.on("friendRequestAccepted", (friendId) => {
+      const selectedUser = useChatStore.getState().selectedUser;
+      if (friendId === selectedUser._id) {
+        useChatStore.getState().setFriendReqReceived(false);
+        useChatStore.getState().setFriendReqSent(false);
         useChatStore.getState().setIsFriend(true);
       }
     });

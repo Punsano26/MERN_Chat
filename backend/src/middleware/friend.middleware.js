@@ -11,7 +11,7 @@ export const checkFriendShip = async (req, res, next) => {
         .json({ message: "You are not friends with this user" });
     }
     next();
-    const friend = await UserModel.findById(friendId);
+    
   } catch (error) {
     res
       .status(500)

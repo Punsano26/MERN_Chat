@@ -52,10 +52,14 @@ export const acceptFriendRequest = async (req, res) => {
     console.log("friend:", friendId, "user:", userId);
     const user = await UserModel.findById(userId);
     const friend = await UserModel.findById(friendId);
-    if (!user || !friend)
+    if (!user || !friend) {
       return res.status(404).json({ message: "Friend not found" });
-    if (!user.friendRequests.includes(friendId))
+    }
+
+    if (!user.friendRequests.includes(friendId)) {
       return res.status(400).json({ message: "Friend request not found user" });
+    }
+
     user.friends.push(friendId);
     friend.friends.push(userId);
     user.friendRequests = user.friendRequests.filter(
@@ -64,6 +68,9 @@ export const acceptFriendRequest = async (req, res) => {
     friend.friendRequests = friend.friendRequests.filter(
       (id) => userId !== id.toString()
     );
+    await user.save();
+    await friend.save();
+    return res.status(200).json({ message: "Friend request accepted" });
   } catch (error) {
     res.status(500).json({
       message: "Internal Server Error While accepting a friend request",

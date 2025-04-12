@@ -10,6 +10,6 @@ import { checkFriendShip } from "../middleware/friend.middleware.js";
 
 router.get("/users", protectedRoute, getUsersForSidebar);
 router.get("/:id", protectedRoute, getMessages);
-router.post("/send:id", protectedRoute, checkFriendShip, sendMessage);
+router.post("/send/:id", protectedRoute, checkFriendShip, sendMessage);
 
 export default router;

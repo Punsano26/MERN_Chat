@@ -2,7 +2,9 @@ import { generateToken } from "../libs/utils.js";
 import UserModel from "../models/user.model.js";
 import bcrypt from "bcrypt";
 import cloudinary from "../libs/cloundinary.js";
-
+import dotenv from "dotenv";
+dotenv.config();
+const node_mode = process.env.NODE_ENV;
 export const signup = async (req, res) => {
   const { fullname, email, password } = req.body;
   if (!fullname || !email || !password) {
@@ -24,7 +26,7 @@ export const signup = async (req, res) => {
     if (newUser) {
       generateToken(newUser._id, res);
       console.log(newUser);
-      
+
       await newUser.save();
       res.status(201).json({
         _id: newUser._id,
@@ -36,7 +38,7 @@ export const signup = async (req, res) => {
       res.status(400).json({ message: "Invalid user data" });
     }
   } catch (error) {
-    console.error("Signup Error: ", error); 
+    console.error("Signup Error: ", error);
     res
       .status(500)
       .json({ message: "Internal server error While registering new user" });
@@ -73,11 +75,16 @@ export const signin = async (req, res) => {
 
 export const logout = async (req, res) => {
   try {
-    res.cookie("jwt", "", { maxAge: 0 });
+    res.cookie("jwt", "", {
+      httpOnly: true,
+      maxAge: 0,
+      sameSite: "none",
+      secure: node_mode !== "development",
+    });
     res.status(200).json({ message: "Logged out successfully" });
   } catch (error) {
     console.log(error);
-    
+
     res
       .status(500)
       .json({ message: "Internal server Error while logging out" });
@@ -85,7 +92,6 @@ export const logout = async (req, res) => {
 };
 
 export const updateProfile = async (req, res) => {
-  const { id } = req.params;
   try {
     const { profilePic } = req.body;
     //
@@ -109,14 +115,17 @@ export const updateProfile = async (req, res) => {
     if (updatedUser) {
       res.status(200).json(updatedUser);
     } else {
-      
       res
         .status(500)
         .json({ message: "Error while updateing profile picture" });
     }
   } catch (error) {
     console.log(error);
-    res.status(500).json({ message: "Internal server error Whlie updateing profile picture" });
+    res
+      .status(500)
+      .json({
+        message: "Internal server error Whlie updateing profile picture",
+      });
   }
 };
 
@@ -124,8 +133,6 @@ export const checkAuth = async (req, res) => {
   try {
     res.status(200).json(req.user);
   } catch (error) {
-    res
-        .status(500)
-        .json({ message: "Error while updateing profile picture" });
+    res.status(500).json({ message: "Error while updateing profile picture" });
   }
-}
+};

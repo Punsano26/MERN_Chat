@@ -10,7 +10,7 @@ export const generateToken = (userId, res) => {
   res.cookie("jwt", token, {
     httpOnly: true,
     maxAge: 24 * 60 * 60 * 1000,
-    sameSite: "strict",
+    sameSite: "none",
     secure: node_mode !== "development",
   }); //xss Attack CSRF Attack
   console.log("token generated ans cookie set");

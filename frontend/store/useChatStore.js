@@ -2,16 +2,14 @@ import { create } from "zustand";
 import api from "../src/services/api.js";
 import { useAuthStore } from "./useAuthStore.js";
 import toast from "react-hot-toast";
-import { addFriend } from "../../backend/src/controllers/friend.controller.js";
 
 export const useChatStore = create((set, get) => ({
   users: [],
-  useStore: [],
   messages: [],
   selectedUser: null,
   isUserLoading: false,
   isMessageLoading: false,
-  isFriend: true,
+  isFriend: false,
 
   friendRequestSent: false,
 
@@ -32,9 +30,15 @@ export const useChatStore = create((set, get) => ({
     }
   },
   getMessage: async (userId) => {
+    
+    
     set({ isMessageLoading: true });
     try {
       const res = await api.get("/message/" + userId);
+      console.log(res.data);
+      
+      
+      
       set({ messages: res.data });
     } catch (error) {
       toast.error(
@@ -69,9 +73,7 @@ export const useChatStore = create((set, get) => ({
       const isMessageSendFromSelectedUser =
         newMessage.senderId === selectedUser._id;
       if (!isMessageSendFromSelectedUser) return;
-      set({
-        messages: [...get().messages, newMessage],
-      });
+      set({ messages: [...get().messages, newMessage] });
     });
   },
   unsubscribeToMessage: () => {
@@ -100,7 +102,8 @@ export const useChatStore = create((set, get) => ({
       const res = await api.post("/friend/accept", { friendId });
       toast.success(res.data.message);
       useAuthStore.getState().socket.emit("friendRequestAccepted", friendId);
-      set({ isFriend: true, friendReqReceived: false });
+      set({ isFriend: true, friendRequestReceived: false });
+
     } catch (error) {
       toast.error(
         error.response.data.message ||

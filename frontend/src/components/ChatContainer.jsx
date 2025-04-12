@@ -5,7 +5,7 @@ import ChatHeader from "./ChatHeader";
 import MessageInput from "./MeassageInput";
 import MessageSkeleton from "./skeletons/MessageSkeleton";
 import { formatMessageTime } from "../lib/utils";
-import { set } from "mongoose";
+
 
 const Chatcontainer = () => {
   const {
@@ -29,9 +29,9 @@ const Chatcontainer = () => {
 
   const handleAddfriend = () => {
     addFriend(selectedUser._id);
-    setIsFriend(true);
+    setIsFriend(false);
     setFriendRequestSent(true);
-    setFriendRequestReceived(true);
+    setFriendRequestReceived(false);
   };
 
   useEffect(() => {
@@ -42,19 +42,35 @@ const Chatcontainer = () => {
       );
       setFriendRequestSent(selectedUser.friendRequests.includes(authUser._id));
     }
-  });
+  }, [authUser, selectedUser]);
+  
 
   useEffect(() => {
     //get history messages
     getMessage(selectedUser._id);
     //listen
     subscribeToMessage();
+    return () => unsubscribeToMessage();
   }, [selectedUser._id, subscribeToMessage, unsubscribeToMessage, getMessage]);
   useEffect(() => {
     if (messageEndRef.current && messages) {
       messageEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages]);
+
+  useEffect(() => {
+    if (authUser && selectedUser) {
+      setIsFriend(authUser.friends.includes(selectedUser._id));
+      setFriendRequestReceived(authUser.friendRequests.includes(selectedUser._id));
+      setFriendRequestSent(selectedUser.friendRequests.includes(authUser._id));
+    }
+  }, [
+    setIsFriend,
+    setFriendRequestSent,
+    setFriendRequestReceived,
+    authUser,
+    selectedUser,
+  ]);
 
   if (isMessageLoading) {
     return (
@@ -65,12 +81,18 @@ const Chatcontainer = () => {
       </div>
     );
   }
-  const handleAcceptRequest = () => {
-    acceptFriendRequest(selectedUser._id);
-    setIsFriend(true);
-    setFriendRequestReceived(true);
-    getMessage(selectedUser._id);
+  const handleAcceptRequest = async () => {
+    try {
+      await acceptFriendRequest(selectedUser._id); // เรียก API จริง
+      setIsFriend(true);
+      setFriendRequestReceived(false); // เพราะยอมรับแล้ว
+      setFriendRequestSent(false);     // ไม่ต้องรอแล้ว
+      getMessage(selectedUser._id);    // โหลดข้อความใหม่หลังเป็นเพื่อน
+    } catch (err) {
+      console.error("Accept friend request failed:", err);
+    }
   };
+  
   return (
     <div className="flex-1 flex flex-col overflow-auto">
       <ChatHeader />
@@ -115,24 +137,24 @@ const Chatcontainer = () => {
         ))}
       </div>
       {!isFriend && !friendRequestSent && !friendRequestReceived && (
-        <div className="p-4 text-center text-red-500">
-          You must be friend whit this user to send Messages.
-          <button onClick={handleAddfriend} className="btn btn-sm-mt-2">
+        <div className="p-4 text-center text-rose-500">
+          You must be friend with this user to send messages!
+          <button onClick={handleAddfriend} className="btn btn-sm ml-2">
             Add friend
           </button>
         </div>
       )}
       {!isFriend && friendRequestSent && !friendRequestReceived && (
-        <div className="p-4 text-center text-red-500">
-          friend request sent. Waiting for acceptance.
+        <div className="p-4 text-center text-amber-500">
+          You have sent a friend request. Waiting for acceptance!
         </div>
       )}
-
-      {!isFriend && friendRequestReceived && friendRequestSent && (
-        <div className="p-4 text-center text-red-500">
-          Friend want to be your friend.
-          <button onClick={handleAcceptRequest} className="btn btn-sm-mt-2">
-            Appcept
+      {!isFriend && !friendRequestSent && friendRequestReceived && (
+        <div className="p-4 text-center text-emerald-500">
+          {selectedUser.name} have sent you a friend request. Waiting for your
+          response!
+          <button onClick={handleAcceptRequest} className="btn btn-sm ml-2">
+            Accept friend
           </button>
         </div>
       )}
