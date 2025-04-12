@@ -1,9 +1,10 @@
-import Home from "./pages/Home";
+
 import { Routes, Route, Navigate } from "react-router";
 import "./App.css";
 import Login from "./pages/Login";
 import Profile from "./pages/Profile";
 import Setting from "./pages/Setting";
+import HomePage from "./pages/Home";
 import SignUp from "./pages/Signup";
 import Navbar from "./components/Navbar";
 import { Toaster } from "react-hot-toast";
@@ -32,7 +33,7 @@ function App() {
         <Routes>
           <Route
             path="/"
-            element={authUser ? <Home /> : <Navigate to="/login" />}
+            element={authUser ? <HomePage /> : <Navigate to="/login" />}
           />
           <Route
             path="/login"

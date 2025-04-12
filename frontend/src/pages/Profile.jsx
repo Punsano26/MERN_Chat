@@ -15,7 +15,7 @@ const Profile = () => {
     const reader = new FileReader();
 
     reader.readAsDataURL(file);
-
+// kkk
     reader.onload = async (ษฤํ) => {
       const base64Image = reader.result;
       setSelectedImg(base64Image);
